@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DRAFT LEBRON 2028</title>
+  <meta name="description" content="The national movement to draft LeBron James for President. Sign the declaration." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <canvas id="confetti"></canvas>
+
+  <header class="topbar">
+    <a href="#top" class="brand"><span class="crown">&#9819;</span> DRAFT LEBRON</a>
+    <a href="#sign" class="brand-cta">SIGN</a>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero" id="top">
+    <div class="spotlight"></div>
+    <div class="hero-photo">
+      <img src="img/lebron.jpg" alt="LeBron James" />
+    </div>
+    <div class="hero-grad"></div>
+    <div class="hero-inner">
+      <p class="eyebrow">A National Movement &middot; Est. 2026</p>
+      <h1 class="bighead">
+        <span class="line">DRAFT</span>
+        <span class="line gold">LEBRON</span>
+        <span class="line sub">FOR PRESIDENT <span class="dot">&#9819;</span> 2028</span>
+      </h1>
+      <p class="hero-tag">
+        Twenty one seasons. One school built from nothing. Zero nights off.
+        We are asking LeBron to run the country. Add your name to the draft.
+      </p>
+
+      <div class="counter-block">
+        <div class="counter" id="heroCount">0</div>
+        <div class="counter-cap"><span class="pulse"></span> citizens have signed the draft</div>
+      </div>
+
+      <a href="#sign" class="big-btn">PUT ME ON THE BOARD <span>&#8594;</span></a>
+    </div>
+  </section>
+
+  <!-- MARQUEE -->
+  <div class="marquee">
+    <div class="marquee-track" id="marquee"></div>
+  </div>
+
+  <!-- THE CASE -->
+  <section class="case">
+    <p class="kick">THE RESUME</p>
+    <h2 class="h2">Most candidates campaign on potential.<br><span class="gold">He has the receipts.</span></h2>
+    <div class="case-grid">
+      <div class="case-card">
+        <div class="case-num">21</div>
+        <div class="case-lbl">seasons of showing up every single night</div>
+      </div>
+      <div class="case-card">
+        <div class="case-num">1</div>
+        <div class="case-lbl">public school built for the kids everyone gave up on</div>
+      </div>
+      <div class="case-card">
+        <div class="case-num">1st</div>
+        <div class="case-lbl">father to share an NBA court with his son. He coached Bronny, raised him, and showed up for him every step.</div>
+      </div>
+      <div class="case-card">
+        <div class="case-num">0</div>
+        <div class="case-lbl">games taken off when his team, or his family, needed him most</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BRONNY BAND -->
+  <section class="bronny" id="family">
+    <div class="bronny-inner">
+      <p class="kick gold">AND ABOUT THE FAMILY</p>
+      <h2 class="h2">Bronny James becomes<br>America's <span class="gold">First Son.</span></h2>
+      <p class="bronny-sub">
+        The first father and son to ever share an NBA court would walk into the
+        White House together. A family that turned showing up into a legacy,
+        now representing every family in the country.
+      </p>
+    </div>
+  </section>
+
+  <!-- SIGN -->
+  <section class="sign" id="sign">
+    <div class="sign-grid">
+      <div class="sign-left">
+        <p class="kick gold">THE DECLARATION</p>
+        <h2 class="h2">We the undersigned formally draft<br>LeBron James for President.</h2>
+        <p class="sign-blurb">
+          This is not an endorsement of a party. It is a call for a leader who has
+          spent his entire life proving that effort, loyalty, and a refusal to lose
+          can move anything. Sign it. Then send it to someone who needs to see it.
+        </p>
+
+        <div class="bar-wrap">
+          <div class="bar-head">
+            <span id="goalNow">0</span>
+            <span class="bar-goal">/ 1,000,000 goal</span>
+          </div>
+          <div class="bar"><div class="bar-fill" id="barFill"></div></div>
+        </div>
+      </div>
+
+      <form class="card" id="form" novalidate>
+        <h3 class="card-title">ADD YOUR NAME</h3>
+        <div class="field">
+          <label for="firstName">First name</label>
+          <input id="firstName" type="text" autocomplete="given-name" placeholder="LeBron" />
+        </div>
+        <div class="field">
+          <label for="state">State</label>
+          <select id="state"><option value="" disabled selected>Select your state</option></select>
+        </div>
+        <div class="field">
+          <label for="reason">Your message <span class="opt">(optional, gets featured)</span></label>
+          <input id="reason" type="text" maxlength="90" placeholder="Why are you in?" />
+        </div>
+        <button type="submit" class="submit">I'M IN &#9819;</button>
+        <p class="card-foot">One tap. You're on the board for good.</p>
+      </form>
+    </div>
+  </section>
+
+  <!-- WALL -->
+  <section class="wall-sec">
+    <p class="kick">THE BOARD</p>
+    <h2 class="h2">Every name is a vote of <span class="gold">confidence.</span></h2>
+    <div class="wall" id="wall"></div>
+  </section>
+
+  <footer class="footer">
+    <p class="foot-big"><span class="crown">&#9819;</span> DRAFT LEBRON 2028</p>
+    <p class="foot-fine">
+      An independent, fan-led movement. Not authorized by or affiliated with LeBron James
+      or any candidate or committee. Made by people who just think he'd be good at it.
+    </p>
+    <p class="foot-copy">&copy; <span id="yr"></span> lebronforpresident.com</p>
+    <p class="foot-credit">Photo: Erik Drost, <a href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener">CC BY 2.0</a>, via Wikimedia Commons.</p>
+  </footer>
+
+  <!-- MODAL -->
+  <div class="modal-bg" id="modal" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modal-crown">&#9819;</div>
+      <h3>YOU'RE ON THE BOARD.</h3>
+      <p class="modal-num">Signer <strong id="modalNum">#0</strong></p>
+      <p class="modal-sub">Now make it loud. Send the draft to one person.</p>
+      <div class="modal-btns">
+        <button class="submit" id="shareBtn">SHARE THE DRAFT</button>
+        <button class="ghost" id="modalClose">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
