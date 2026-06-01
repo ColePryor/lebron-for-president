@@ -188,29 +188,12 @@
     form.addEventListener("input", function (e) { if (e.target.classList) e.target.classList.remove("bad"); });
   }
 
-  // ---- trivia battle ----
-  // Each question: c = index of the correct answer in a[]. Options are shuffled at render.
-  var TRIVIA = [
-    { q: "Where was LeBron born and raised?",
-      a: ["Akron, Ohio", "Cleveland, Ohio", "Miami, Florida", "Los Angeles, California"], c: 0 },
-    { q: "In what year was LeBron drafted #1 overall?",
-      a: ["2003", "2001", "2005", "1999"], c: 0 },
-    { q: "Whose record did LeBron break in 2023 to become the NBA's all-time leading scorer?",
-      a: ["Kareem Abdul-Jabbar", "Michael Jordan", "Kobe Bryant", "Karl Malone"], c: 0 },
-    { q: "How many NBA championships has LeBron won?",
-      a: ["Four", "Two", "Three", "Six"], c: 0 },
-    { q: "What school did LeBron open in his hometown in 2018?",
-      a: ["The I PROMISE School", "King James Prep", "The Chosen Academy", "Akron Future School"], c: 0 },
-    { q: "In 2024 LeBron made NBA history by playing alongside which family member?",
-      a: ["His son, Bronny", "His brother", "His father", "His nephew"], c: 0 }
-  ];
+  // ---- LeBron Ladder (online ELO trivia) ----
+  var PLAYER_KEY = "draftLeBron.player";
 
-  var RANKS = [
-    { min: 6, icon: "\u{1F410}", title: "THE GOAT", blurb: "Flawless. You bleed gold and purple — cabinet position pending." },
-    { min: 4, icon: "♛", title: "ALL-STAR", blurb: "Certified believer. Now make it official and sign the draft." },
-    { min: 2, icon: "\u{1F3C0}", title: "ROLE PLAYER", blurb: "Solid minutes. Brush up, but you're clearly on the right team." },
-    { min: 0, icon: "\u{1F454}", title: "BENCH WARMER", blurb: "Rookie mistakes — but every legend starts on the bench. Run it back." }
-  ];
+  // Backend is wired only if config.js was filled in. Both values are public-safe.
+  var LADDER = (window.LADDER_CONFIG && window.LADDER_CONFIG.url && window.LADDER_CONFIG.anonKey)
+    ? window.LADDER_CONFIG : null;
 
   function shuffle(arr) {
     var a = arr.slice();
@@ -221,76 +204,233 @@
     return a;
   }
 
+  function ratingTitle(r) {
+    if (r >= 1400) return { icon: "\u{1F410}", title: "GOAT TIER" };
+    if (r >= 1200) return { icon: "♛", title: "ALL-STAR" };
+    if (r >= 1000) return { icon: "\u{1F3C0}", title: "STARTER" };
+    return { icon: "\u{1F454}", title: "BENCH WARMER" };
+  }
+
   function setupTrivia() {
     var card = document.getElementById("triviaCard");
     if (!card) return;
-    var startEl = document.getElementById("triviaStart");
+
+    // stages + controls
+    var joinEl = document.getElementById("triviaJoin");
     var playEl = document.getElementById("triviaPlay");
     var resultEl = document.getElementById("triviaResult");
-    var qEl = document.getElementById("triviaQ");
-    var optsEl = document.getElementById("triviaOpts");
+    var noticeEl = document.getElementById("triviaNotice");
+
+    var joinTitle = document.getElementById("triviaJoinTitle");
+    var joinMsg = document.getElementById("triviaJoinMsg");
+    var joinForm = document.getElementById("triviaJoinForm");
+    var handleEl = document.getElementById("triviaHandle");
+    var joinBtn = document.getElementById("triviaJoinBtn");
+    var startBtn = document.getElementById("triviaStartBtn");
+    var switchBtn = document.getElementById("triviaSwitch");
+    var ladderJoinEl = document.getElementById("triviaLadderJoin");
+
+    var meEl = document.getElementById("triviaMe");
+    var oppEl = document.getElementById("triviaOpp");
     var countEl = document.getElementById("triviaCount");
     var scoreEl = document.getElementById("triviaScore");
     var barEl = document.getElementById("triviaBarFill");
+    var qEl = document.getElementById("triviaQ");
+    var optsEl = document.getElementById("triviaOpts");
 
-    var idx = 0, score = 0, locked = false;
+    var rankIcon = document.getElementById("triviaRank");
+    var rankTitle = document.getElementById("triviaRankTitle");
+    var finalEl = document.getElementById("triviaFinal");
+    var blurbEl = document.getElementById("triviaBlurb");
+    var recapEl = document.getElementById("triviaRecap");
+    var againBtn = document.getElementById("triviaAgain");
+    var ladderResultEl = document.getElementById("triviaLadderResult");
 
-    function show(el) {
-      [startEl, playEl, resultEl].forEach(function (s) { s.hidden = (s !== el); });
+    var player = null;   // { id, handle, rating }
+    var match = null;    // start_match payload
+    var answers = [];    // chosen original option index per question
+    var idx = 0;
+    var busy = false;
+
+    function show(el) { [joinEl, playEl, resultEl].forEach(function (s) { s.hidden = (s !== el); }); }
+    function notice(msg) { noticeEl.textContent = msg; noticeEl.hidden = false; }
+    function clearNotice() { noticeEl.hidden = true; }
+    function fail(msg, e) { if (e) console.error(e); notice(msg); }
+
+    // ---- Supabase REST helpers (no SDK, just fetch) ----
+    var base = LADDER ? LADDER.url.replace(/\/+$/, "") : "";
+    function api(path, opts) {
+      opts = opts || {};
+      return fetch(base + path, {
+        method: opts.method || "GET",
+        headers: {
+          "apikey": LADDER.anonKey,
+          "Authorization": "Bearer " + LADDER.anonKey,
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: opts.body ? JSON.stringify(opts.body) : undefined
+      }).then(function (r) {
+        if (!r.ok) return r.text().then(function (t) { throw new Error(t || ("HTTP " + r.status)); });
+        return r.text().then(function (t) { return t ? JSON.parse(t) : null; });
+      });
+    }
+    function rpc(fn, args) { return api("/rest/v1/rpc/" + fn, { method: "POST", body: args || {} }); }
+
+    function savePlayer() { save(PLAYER_KEY, player); }
+
+    function renderLadder(el) {
+      if (!el) return;
+      api("/rest/v1/leaderboard?select=handle,rating,played&limit=10").then(function (rows) {
+        if (!rows || !rows.length) { el.innerHTML = ""; return; }
+        var html = '<p class="trivia-ladder-title">GLOBAL TOP 10</p>';
+        var tagged = false;
+        rows.forEach(function (row, i) {
+          var you = !tagged && player && row.handle === player.handle && row.rating === player.rating;
+          if (you) tagged = true;
+          html += '<div class="trivia-row' + (you ? " you" : "") + '">' +
+            '<span class="trivia-rank-n">' + (i + 1) + '</span>' +
+            '<span class="trivia-row-handle">' + esc(row.handle) +
+              (you ? ' <span class="trivia-row-you-tag">YOU</span>' : '') + '</span>' +
+            '<span class="trivia-row-rating">' + row.rating + '</span></div>';
+        });
+        el.innerHTML = html;
+      }).catch(function (e) { console.error(e); });
     }
 
-    function start() { idx = 0; score = 0; show(playEl); renderQ(); }
+    function renderJoin() {
+      if (player) {
+        joinTitle.textContent = "WELCOME BACK";
+        joinMsg.textContent = "You're " + player.handle + " — rating " + player.rating + ". Climb higher.";
+        joinForm.hidden = true; startBtn.hidden = false; switchBtn.hidden = false;
+      } else {
+        joinTitle.textContent = "ENTER THE LADDER";
+        joinMsg.textContent = "Claim a handle to get your starting rating of 1000, then start climbing.";
+        joinForm.hidden = false; startBtn.hidden = true; switchBtn.hidden = true;
+      }
+      renderLadder(ladderJoinEl);
+    }
+
+    function doJoin() {
+      if (busy) return;
+      var h = handleEl.value.trim();
+      if (h.length < 2) { notice("Pick a handle of at least 2 characters."); return; }
+      busy = true; joinBtn.disabled = true; clearNotice();
+      rpc("join_ladder", { p_handle: h }).then(function (p) {
+        player = { id: p.id, handle: p.handle, rating: p.rating }; savePlayer();
+        busy = false; joinBtn.disabled = false; renderJoin();
+      }).catch(function (e) { busy = false; joinBtn.disabled = false; fail("Couldn't join the ladder. Try again.", e); });
+    }
+
+    function doSwitch() {
+      player = null; save(PLAYER_KEY, null); handleEl.value = ""; clearNotice(); renderJoin();
+    }
+
+    function startMatch() {
+      if (busy || !player) return;
+      busy = true; clearNotice(); startBtn.disabled = true; againBtn.disabled = true;
+      rpc("start_match", { p_player_id: player.id }).then(function (m) {
+        match = m; answers = []; idx = 0; busy = false;
+        startBtn.disabled = false; againBtn.disabled = false;
+        player.rating = m.your_rating; savePlayer();
+        meEl.textContent = player.handle + " · " + m.your_rating;
+        oppEl.textContent = m.opponent.handle + " · " + m.opponent.rating;
+        show(playEl); renderQ();
+      }).catch(function (e) {
+        busy = false; startBtn.disabled = false; againBtn.disabled = false;
+        fail("Couldn't start a match. Try again.", e);
+      });
+    }
 
     function renderQ() {
-      locked = false;
-      var item = TRIVIA[idx];
-      var correct = item.a[item.c];
-      countEl.textContent = "Q" + (idx + 1) + " / " + TRIVIA.length;
-      scoreEl.textContent = "SCORE " + score;
-      barEl.style.width = ((idx / TRIVIA.length) * 100) + "%";
-      qEl.textContent = item.q;
+      busy = false;
+      var q = match.questions[idx];
+      var n = match.questions.length;
+      countEl.textContent = "Q" + (idx + 1) + " / " + n;
+      scoreEl.textContent = "LOCKED IN " + idx + " / " + n;
+      barEl.style.width = ((idx / n) * 100) + "%";
+      qEl.textContent = q.prompt;
       optsEl.innerHTML = "";
-      shuffle(item.a).forEach(function (opt) {
+      // shuffle display order but remember the original index to submit
+      shuffle(q.options.map(function (_, k) { return k; })).forEach(function (orig) {
         var b = document.createElement("button");
         b.type = "button";
         b.className = "trivia-opt";
-        b.textContent = opt;
-        b.addEventListener("click", function () { pick(b, opt, correct); });
+        b.textContent = q.options[orig];
+        b.addEventListener("click", function () { pick(b, orig); });
         optsEl.appendChild(b);
       });
     }
 
-    function pick(btn, opt, correct) {
-      if (locked) return;
-      locked = true;
-      if (opt === correct) score++;
-      Array.prototype.forEach.call(optsEl.children, function (b) {
-        b.disabled = true;
-        if (b.textContent === correct) b.classList.add("right");
-        else if (b === btn) b.classList.add("wrong");
-      });
-      scoreEl.textContent = "SCORE " + score;
+    function pick(btn, orig) {
+      if (busy) return;
+      busy = true;
+      answers[idx] = orig;
+      Array.prototype.forEach.call(optsEl.children, function (b) { b.disabled = true; });
+      btn.classList.add("picked");
+      scoreEl.textContent = "LOCKED IN " + (idx + 1) + " / " + match.questions.length;
       setTimeout(function () {
         idx++;
-        if (idx < TRIVIA.length) renderQ();
-        else finish();
-      }, 850);
+        if (idx < match.questions.length) renderQ();
+        else finishMatch();
+      }, 320);
     }
 
-    function finish() {
+    function finishMatch() {
       barEl.style.width = "100%";
-      var tier = RANKS[0];
-      for (var i = 0; i < RANKS.length; i++) { if (score >= RANKS[i].min) { tier = RANKS[i]; break; } }
-      document.getElementById("triviaRank").textContent = tier.icon;
-      document.getElementById("triviaRankTitle").textContent = tier.title;
-      document.getElementById("triviaFinal").textContent = score + " / " + TRIVIA.length + " correct";
-      document.getElementById("triviaBlurb").textContent = tier.blurb;
+      rankIcon.textContent = "⏳"; rankTitle.textContent = "SCORING…";
+      finalEl.textContent = ""; blurbEl.textContent = ""; recapEl.innerHTML = "";
       show(resultEl);
-      if (score === TRIVIA.length) celebrate();
+      rpc("finish_match", { p_match_id: match.match_id, p_answers: answers })
+        .then(renderResult)
+        .catch(function (e) { fail("Couldn't score that match. Try again.", e); renderJoin(); show(joinEl); });
     }
 
-    document.getElementById("triviaStartBtn").addEventListener("click", start);
-    document.getElementById("triviaRetry").addEventListener("click", start);
+    function renderResult(res) {
+      player.rating = res.new_rating; savePlayer();
+      var t = ratingTitle(res.new_rating);
+      rankIcon.textContent = t.icon;
+      rankTitle.textContent = t.title;
+      var sign = res.delta >= 0 ? "+" : "−";
+      finalEl.textContent = sign + Math.abs(res.delta) + "  →  " + res.new_rating;
+      blurbEl.textContent = "You went " + res.correct + "/" + res.total + " against " +
+        res.opponent.handle + " (" + res.opponent.rating + "). You're now #" +
+        res.rank + " of " + res.players + " on the ladder.";
+      recapEl.innerHTML = "";
+      (res.results || []).forEach(function (r) {
+        var p = document.createElement("span");
+        p.className = "trivia-pip " + (r.correct ? "hit" : "miss");
+        recapEl.appendChild(p);
+      });
+      show(resultEl);
+      renderLadder(ladderResultEl);
+      if (res.total && res.correct === res.total) celebrate();
+    }
+
+    // ---- wire up ----
+    if (!LADDER) {
+      notice("The online LeBron Ladder isn't connected yet — check back soon.");
+      joinForm.hidden = true;
+      return;
+    }
+
+    joinBtn.addEventListener("click", doJoin);
+    handleEl.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); doJoin(); } });
+    startBtn.addEventListener("click", startMatch);
+    againBtn.addEventListener("click", startMatch);
+    switchBtn.addEventListener("click", doSwitch);
+
+    player = load(PLAYER_KEY, null);
+    if (player && player.id) {
+      rpc("get_player", { p_id: player.id }).then(function (p) {
+        if (!p) { player = null; save(PLAYER_KEY, null); }
+        else { player = { id: player.id, handle: p.handle, rating: p.rating }; savePlayer(); }
+        renderJoin();
+      }).catch(function () { renderJoin(); });
+    } else {
+      player = null;
+      renderJoin();
+    }
   }
 
   function setupShare() {

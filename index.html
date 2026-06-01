@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DRAFT LEBRON 2028</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%F0%9F%91%91</text></svg>" />
   <meta name="description" content="The national movement to draft LeBron James for President. Sign the declaration." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -89,27 +90,41 @@
     </div>
   </section>
 
-  <!-- TRIVIA BATTLE -->
+  <!-- LEBRON LADDER (ELO TRIVIA) -->
   <section class="trivia" id="trivia">
     <div class="trivia-inner">
-      <p class="kick gold">THE LOYALTY TEST</p>
-      <h2 class="h2">Before you sign, prove you<br>know <span class="gold">the King.</span></h2>
-      <p class="trivia-sub">Six questions. No timeouts. Earn your spot on the roster.</p>
+      <p class="kick gold">THE LEBRON LADDER</p>
+      <h2 class="h2">Don't just say you know him.<br><span class="gold">Out-rank everyone.</span></h2>
+      <p class="trivia-sub">Pick a handle, face a real rival, and climb a live global ELO ranking of who knows LeBron best.</p>
 
       <div class="trivia-card" id="triviaCard">
-        <!-- start -->
-        <div class="trivia-stage" id="triviaStart">
+        <!-- notice / loading -->
+        <p class="trivia-notice" id="triviaNotice" hidden></p>
+
+        <!-- join -->
+        <div class="trivia-stage" id="triviaJoin">
           <div class="trivia-bigicon">&#9819;</div>
-          <h3 class="trivia-h3">LEBRON TRIVIA BATTLE</h3>
-          <p class="trivia-copy">Tip off the quiz and find out what kind of supporter you really are.</p>
-          <button type="button" class="submit" id="triviaStartBtn">TIP OFF &#9819;</button>
+          <h3 class="trivia-h3" id="triviaJoinTitle">ENTER THE LADDER</h3>
+          <p class="trivia-copy" id="triviaJoinMsg">Claim a handle to get your starting rating of 1000, then start climbing.</p>
+          <div id="triviaJoinForm">
+            <input id="triviaHandle" class="trivia-handle" type="text" maxlength="20" autocomplete="off" placeholder="Your handle (e.g. AkronAnnie)" />
+            <button type="button" class="submit" id="triviaJoinBtn">ENTER THE LADDER &#9819;</button>
+          </div>
+          <button type="button" class="submit" id="triviaStartBtn" hidden>START A MATCH &#9819;</button>
+          <button type="button" class="trivia-link" id="triviaSwitch" hidden>Play as someone else</button>
+          <div class="trivia-ladder" id="triviaLadderJoin"></div>
         </div>
 
-        <!-- question -->
+        <!-- match -->
         <div class="trivia-stage" id="triviaPlay" hidden>
+          <div class="trivia-vs">
+            <span class="trivia-vs-side me" id="triviaMe">YOU &middot; 1000</span>
+            <span class="trivia-vs-x">VS</span>
+            <span class="trivia-vs-side opp" id="triviaOpp">&mdash;</span>
+          </div>
           <div class="trivia-top">
-            <span class="trivia-count" id="triviaCount">Q1 / 6</span>
-            <span class="trivia-score" id="triviaScore">SCORE 0</span>
+            <span class="trivia-count" id="triviaCount">Q1 / 5</span>
+            <span class="trivia-score" id="triviaScore">LOCKED IN 0 / 5</span>
           </div>
           <div class="trivia-bar"><div class="trivia-bar-fill" id="triviaBarFill"></div></div>
           <p class="trivia-q" id="triviaQ"></p>
@@ -122,10 +137,12 @@
           <h3 class="trivia-h3" id="triviaRankTitle"></h3>
           <p class="trivia-final" id="triviaFinal"></p>
           <p class="trivia-copy" id="triviaBlurb"></p>
+          <div class="trivia-recap" id="triviaRecap"></div>
           <div class="trivia-result-btns">
-            <a href="#sign" class="submit" id="triviaToSign">PUT ME ON THE BOARD &#8594;</a>
-            <button type="button" class="ghost" id="triviaRetry">Run it back</button>
+            <button type="button" class="submit" id="triviaAgain">NEW MATCH &#9819;</button>
+            <a href="#sign" class="submit trivia-ghostlink" id="triviaToSign">PUT ME ON THE BOARD &#8594;</a>
           </div>
+          <div class="trivia-ladder" id="triviaLadderResult"></div>
         </div>
       </div>
     </div>
@@ -205,6 +222,7 @@
 
   <div class="toast" id="toast"></div>
 
+  <script src="config.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
