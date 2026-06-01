@@ -20,8 +20,8 @@
   function save(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
 
   var sigs = load(SIG_KEY, []);
-  // Honest count: example signatures shown on the board plus real ones from this device.
-  function total() { return SEED.length + sigs.length; }
+  // Honest count: only real signatures from this device. SEED entries are example quotes for the board.
+  function total() { return sigs.length; }
 
   // ---- number tween ----
   function tween(el, to, dur) {
@@ -192,6 +192,111 @@
     form.addEventListener("input", function (e) { if (e.target.classList) e.target.classList.remove("bad"); });
   }
 
+  // ---- trivia battle ----
+  // Each question: c = index of the correct answer in a[]. Options are shuffled at render.
+  var TRIVIA = [
+    { q: "Where was LeBron born and raised?",
+      a: ["Akron, Ohio", "Cleveland, Ohio", "Miami, Florida", "Los Angeles, California"], c: 0 },
+    { q: "In what year was LeBron drafted #1 overall?",
+      a: ["2003", "2001", "2005", "1999"], c: 0 },
+    { q: "Whose record did LeBron break in 2023 to become the NBA's all-time leading scorer?",
+      a: ["Kareem Abdul-Jabbar", "Michael Jordan", "Kobe Bryant", "Karl Malone"], c: 0 },
+    { q: "How many NBA championships has LeBron won?",
+      a: ["Four", "Two", "Three", "Six"], c: 0 },
+    { q: "What school did LeBron open in his hometown in 2018?",
+      a: ["The I PROMISE School", "King James Prep", "The Chosen Academy", "Akron Future School"], c: 0 },
+    { q: "In 2024 LeBron made NBA history by playing alongside which family member?",
+      a: ["His son, Bronny", "His brother", "His father", "His nephew"], c: 0 }
+  ];
+
+  var RANKS = [
+    { min: 6, icon: "\u{1F410}", title: "THE GOAT", blurb: "Flawless. You bleed gold and purple — cabinet position pending." },
+    { min: 4, icon: "♛", title: "ALL-STAR", blurb: "Certified believer. Now make it official and sign the draft." },
+    { min: 2, icon: "\u{1F3C0}", title: "ROLE PLAYER", blurb: "Solid minutes. Brush up, but you're clearly on the right team." },
+    { min: 0, icon: "\u{1F454}", title: "BENCH WARMER", blurb: "Rookie mistakes — but every legend starts on the bench. Run it back." }
+  ];
+
+  function shuffle(arr) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+
+  function setupTrivia() {
+    var card = document.getElementById("triviaCard");
+    if (!card) return;
+    var startEl = document.getElementById("triviaStart");
+    var playEl = document.getElementById("triviaPlay");
+    var resultEl = document.getElementById("triviaResult");
+    var qEl = document.getElementById("triviaQ");
+    var optsEl = document.getElementById("triviaOpts");
+    var countEl = document.getElementById("triviaCount");
+    var scoreEl = document.getElementById("triviaScore");
+    var barEl = document.getElementById("triviaBarFill");
+
+    var idx = 0, score = 0, locked = false;
+
+    function show(el) {
+      [startEl, playEl, resultEl].forEach(function (s) { s.hidden = (s !== el); });
+    }
+
+    function start() { idx = 0; score = 0; show(playEl); renderQ(); }
+
+    function renderQ() {
+      locked = false;
+      var item = TRIVIA[idx];
+      var correct = item.a[item.c];
+      countEl.textContent = "Q" + (idx + 1) + " / " + TRIVIA.length;
+      scoreEl.textContent = "SCORE " + score;
+      barEl.style.width = ((idx / TRIVIA.length) * 100) + "%";
+      qEl.textContent = item.q;
+      optsEl.innerHTML = "";
+      shuffle(item.a).forEach(function (opt) {
+        var b = document.createElement("button");
+        b.type = "button";
+        b.className = "trivia-opt";
+        b.textContent = opt;
+        b.addEventListener("click", function () { pick(b, opt, correct); });
+        optsEl.appendChild(b);
+      });
+    }
+
+    function pick(btn, opt, correct) {
+      if (locked) return;
+      locked = true;
+      if (opt === correct) score++;
+      Array.prototype.forEach.call(optsEl.children, function (b) {
+        b.disabled = true;
+        if (b.textContent === correct) b.classList.add("right");
+        else if (b === btn) b.classList.add("wrong");
+      });
+      scoreEl.textContent = "SCORE " + score;
+      setTimeout(function () {
+        idx++;
+        if (idx < TRIVIA.length) renderQ();
+        else finish();
+      }, 850);
+    }
+
+    function finish() {
+      barEl.style.width = "100%";
+      var tier = RANKS[0];
+      for (var i = 0; i < RANKS.length; i++) { if (score >= RANKS[i].min) { tier = RANKS[i]; break; } }
+      document.getElementById("triviaRank").textContent = tier.icon;
+      document.getElementById("triviaRankTitle").textContent = tier.title;
+      document.getElementById("triviaFinal").textContent = score + " / " + TRIVIA.length + " correct";
+      document.getElementById("triviaBlurb").textContent = tier.blurb;
+      show(resultEl);
+      if (score === TRIVIA.length) celebrate();
+    }
+
+    document.getElementById("triviaStartBtn").addEventListener("click", start);
+    document.getElementById("triviaRetry").addEventListener("click", start);
+  }
+
   function setupShare() {
     var b = document.getElementById("shareBtn");
     if (!b) return;
@@ -206,7 +311,7 @@
   document.addEventListener("DOMContentLoaded", function () {
     var yr = document.getElementById("yr"); if (yr) yr.textContent = String(new Date().getFullYear());
     sizeCanvas();
-    fillStates(); buildMarquee(); setupForm(); setupShare(); renderWall();
+    fillStates(); buildMarquee(); setupForm(); setupShare(); setupTrivia(); renderWall();
     paint(false);
     setTimeout(function () { paint(true); }, 300);
 

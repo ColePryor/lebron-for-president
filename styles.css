@@ -119,8 +119,7 @@ body {
   text-shadow: 0 4px 40px rgba(253,185,39,0.25);
 }
 .counter-cap { color: var(--grey); font-size: 1rem; letter-spacing: 0.04em; display: flex; align-items: center; gap: 9px; margin-top: 6px; }
-.pulse { width: 9px; height: 9px; border-radius: 50%; background: #38d66b; box-shadow: 0 0 0 0 rgba(56,214,107,0.6); animation: pulse 2s infinite; }
-@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(56,214,107,0.6); } 70% { box-shadow: 0 0 0 12px rgba(56,214,107,0); } 100% { box-shadow: 0 0 0 0 rgba(56,214,107,0); } }
+.pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--gold, #fdb927); opacity: 0.9; }
 
 .big-btn {
   display: inline-flex; align-items: center; gap: 14px; text-decoration: none;
@@ -180,6 +179,50 @@ body {
 .bronny .h2 { margin-bottom: 1.2rem; }
 .bronny-sub { color: var(--grey); font-size: 1.1rem; line-height: 1.65; max-width: 600px; margin: 0 auto; }
 @media (max-width: 640px) { .bronny::before, .bronny::after { display: none; } }
+
+/* TRIVIA BATTLE */
+.trivia {
+  position: relative; padding: 110px 26px; text-align: center;
+  background:
+    radial-gradient(60% 90% at 50% 0%, rgba(85,37,131,0.35), transparent 60%),
+    var(--black);
+  border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+}
+.trivia-inner { max-width: 760px; margin: 0 auto; }
+.trivia .kick, .trivia .h2 { text-align: center; }
+.trivia-sub { color: var(--grey); font-size: 1.08rem; margin-bottom: 2.6rem; }
+.trivia-card {
+  border: 1px solid var(--line); border-radius: 22px; padding: 40px 34px; min-height: 360px;
+  background: linear-gradient(180deg, var(--black-2), var(--black));
+  box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+  display: flex; flex-direction: column; justify-content: center; text-align: center;
+}
+.trivia-stage[hidden] { display: none; }
+.trivia-bigicon { font-size: 3.6rem; color: var(--gold); line-height: 1; margin-bottom: 12px; filter: drop-shadow(0 4px 20px rgba(253,185,39,0.4)); }
+.trivia-h3 { font-family: "Anton", sans-serif; font-size: 2rem; letter-spacing: 0.04em; margin-bottom: 0.8rem; }
+.trivia-copy { color: var(--grey); margin-bottom: 1.8rem; }
+.trivia-card .submit { max-width: 300px; margin-left: auto; margin-right: auto; }
+
+.trivia-top { display: flex; justify-content: space-between; align-items: center; font-family: "Anton", sans-serif; letter-spacing: 0.08em; margin-bottom: 12px; }
+.trivia-count { color: var(--grey); font-size: 0.95rem; }
+.trivia-score { color: var(--gold); font-size: 0.95rem; font-variant-numeric: tabular-nums; }
+.trivia-bar { height: 8px; background: rgba(255,255,255,0.08); border-radius: 99px; overflow: hidden; margin-bottom: 26px; }
+.trivia-bar-fill { height: 100%; width: 0%; border-radius: 99px; background: linear-gradient(90deg, var(--purple-2), var(--gold)); transition: width 0.4s cubic-bezier(.2,.8,.2,1); }
+.trivia-q { font-size: clamp(1.15rem, 2.4vw, 1.5rem); line-height: 1.35; margin-bottom: 1.6rem; min-height: 2.4em; display: flex; align-items: center; justify-content: center; }
+.trivia-opts { display: grid; gap: 12px; }
+.trivia-opt {
+  width: 100%; text-align: left; cursor: pointer; font-family: inherit; font-size: 1.02rem;
+  background: var(--black-2); color: var(--white); border: 1.5px solid var(--line);
+  border-radius: 12px; padding: 16px 18px;
+  transition: border-color 0.15s, background 0.15s, transform 0.1s;
+}
+.trivia-opt:hover:not(:disabled) { border-color: var(--gold); transform: translateY(-1px); }
+.trivia-opt:disabled { cursor: default; }
+.trivia-opt.right { border-color: #38d66b; background: rgba(56,214,107,0.14); }
+.trivia-opt.wrong { border-color: #ff5470; background: rgba(255,84,112,0.14); }
+.trivia-final { font-family: "Anton", sans-serif; font-size: 1.6rem; color: var(--gold); margin-bottom: 0.6rem; }
+.trivia-result-btns { display: flex; flex-direction: column; gap: 10px; max-width: 320px; margin: 1.6rem auto 0; }
+.trivia-result-btns .submit { text-decoration: none; text-align: center; display: block; }
 
 /* SIGN */
 .sign {
@@ -295,7 +338,7 @@ select option { color: #000; }
 }
 @media (max-width: 560px) {
   .case-grid, .wall { grid-template-columns: 1fr; }
-  .case, .sign, .wall-sec { padding-top: 70px; padding-bottom: 70px; }
+  .case, .sign, .wall-sec, .trivia { padding-top: 70px; padding-bottom: 70px; }
   .bighead .line { line-height: 0.84; }
   .bighead .line:not(.sub) { font-size: clamp(3.2rem, 19vw, 6rem); }
 }

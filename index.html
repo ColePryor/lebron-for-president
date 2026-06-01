@@ -89,6 +89,48 @@
     </div>
   </section>
 
+  <!-- TRIVIA BATTLE -->
+  <section class="trivia" id="trivia">
+    <div class="trivia-inner">
+      <p class="kick gold">THE LOYALTY TEST</p>
+      <h2 class="h2">Before you sign, prove you<br>know <span class="gold">the King.</span></h2>
+      <p class="trivia-sub">Six questions. No timeouts. Earn your spot on the roster.</p>
+
+      <div class="trivia-card" id="triviaCard">
+        <!-- start -->
+        <div class="trivia-stage" id="triviaStart">
+          <div class="trivia-bigicon">&#9819;</div>
+          <h3 class="trivia-h3">LEBRON TRIVIA BATTLE</h3>
+          <p class="trivia-copy">Tip off the quiz and find out what kind of supporter you really are.</p>
+          <button type="button" class="submit" id="triviaStartBtn">TIP OFF &#9819;</button>
+        </div>
+
+        <!-- question -->
+        <div class="trivia-stage" id="triviaPlay" hidden>
+          <div class="trivia-top">
+            <span class="trivia-count" id="triviaCount">Q1 / 6</span>
+            <span class="trivia-score" id="triviaScore">SCORE 0</span>
+          </div>
+          <div class="trivia-bar"><div class="trivia-bar-fill" id="triviaBarFill"></div></div>
+          <p class="trivia-q" id="triviaQ"></p>
+          <div class="trivia-opts" id="triviaOpts"></div>
+        </div>
+
+        <!-- result -->
+        <div class="trivia-stage" id="triviaResult" hidden>
+          <div class="trivia-bigicon" id="triviaRank">&#9819;</div>
+          <h3 class="trivia-h3" id="triviaRankTitle"></h3>
+          <p class="trivia-final" id="triviaFinal"></p>
+          <p class="trivia-copy" id="triviaBlurb"></p>
+          <div class="trivia-result-btns">
+            <a href="#sign" class="submit" id="triviaToSign">PUT ME ON THE BOARD &#8594;</a>
+            <button type="button" class="ghost" id="triviaRetry">Run it back</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- SIGN -->
   <section class="sign" id="sign">
     <div class="sign-grid">
