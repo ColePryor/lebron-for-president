@@ -113,8 +113,18 @@ begin
   );
 end; $$;
 
+-- The rival's per-question answer clock, in milliseconds, from their rating.
+-- Tougher rivals answer faster, so you get less time to beat them. Shared by
+-- start_match (to show the target) and finish_match (to score), so the clock
+-- the player sees is exactly the one they're scored against.
+create or replace function public.opp_speed_ms(p_rating int)
+returns int language sql immutable as $$
+  select greatest(2500, least(9000, 7000 - (p_rating - 1000) * 4))::int;
+$$;
+
 -- Start a match: pick 5 random questions and an opponent from the ladder
--- near the player's rating. Returns questions WITHOUT correct answers.
+-- near the player's rating. Returns questions WITHOUT correct answers, plus
+-- the rival's per-question clock (beat_ms) the player must beat to score.
 create or replace function public.start_match(p_player_id uuid)
 returns jsonb
 language plpgsql security definer set search_path = public as $$
@@ -123,6 +133,7 @@ declare
   v_qids int[];
   v_oh text;
   v_or int;
+  v_opp_ms int;
   v_mid uuid;
   v_questions jsonb;
 begin
@@ -143,6 +154,8 @@ begin
   limit 1;
   if not found then v_oh := 'The House'; v_or := v_rating; end if;
 
+  v_opp_ms := public.opp_speed_ms(v_or);
+
   insert into matches(player_id, question_ids, opponent_handle, opponent_rating)
   values (p_player_id, v_qids, v_oh, v_or)
   returning id into v_mid;
@@ -158,21 +171,30 @@ begin
   return jsonb_build_object(
     'match_id', v_mid,
     'your_rating', v_rating,
+    'beat_ms', v_opp_ms,
     'opponent', jsonb_build_object('handle', v_oh, 'rating', v_or),
     'questions', v_questions
   );
 end; $$;
 
--- Finish a match: server scores the answers, runs the ELO update, marks
--- the match done (so it can't be replayed), and reveals the answers.
--- p_answers is the chosen option index per question, in question order.
-create or replace function public.finish_match(p_match_id uuid, p_answers int[])
+-- Finish a match: server scores the answers AND the speed, runs the ELO
+-- update, marks the match done (so it can't be replayed), and reveals the
+-- answers. In a 1v1 a question only scores a point when it is BOTH correct
+-- and answered faster than the rival's per-question clock. Slow-but-correct
+-- earns nothing.
+--   p_answers = chosen option index per question, in question order.
+--   p_times   = the player's answer time in milliseconds per question, same order.
+-- (The old 2-arg signature is dropped; speed is now required.)
+drop function if exists public.finish_match(uuid, int[]);
+create or replace function public.finish_match(p_match_id uuid, p_answers int[], p_times int[])
 returns jsonb
 language plpgsql security definer set search_path = public as $$
 declare
   v_m matches%rowtype;
   v_total int;
-  v_correct int := 0;
+  v_correct int := 0;   -- points: correct AND fast
+  v_right int := 0;     -- correct answers regardless of speed (for the recap)
+  v_opp_ms int;
   v_rating int;
   v_new int;
   v_delta int;
@@ -184,7 +206,10 @@ declare
   v_qid int;
   v_ci int;
   v_ans int;
-  v_ok boolean;
+  v_ms int;
+  v_is_right boolean;
+  v_fast boolean;
+  v_scored boolean;
   i int;
 begin
   select * into v_m from matches where id = p_match_id;
@@ -195,23 +220,36 @@ begin
   if array_length(p_answers, 1) is distinct from v_total then
     raise exception 'Answer count does not match the match.';
   end if;
+  if array_length(p_times, 1) is distinct from v_total then
+    raise exception 'Time count does not match the match.';
+  end if;
+
+  -- the rival's clock, recomputed from their stored rating so the client
+  -- can't fake a slower opponent to make every answer count.
+  v_opp_ms := public.opp_speed_ms(v_m.opponent_rating);
 
   for i in 1 .. v_total loop
     v_qid := v_m.question_ids[i];
     select correct_index into v_ci from questions where id = v_qid;
     update questions set played = played + 1 where id = v_qid;
     v_ans := p_answers[i];
-    v_ok := (v_ans = v_ci);
-    if v_ok then v_correct := v_correct + 1; end if;
+    v_ms  := p_times[i];
+    v_is_right := (v_ans = v_ci);
+    v_fast := (v_ms is not null and v_ms >= 0 and v_ms <= v_opp_ms);
+    v_scored := (v_is_right and v_fast);
+    if v_is_right then v_right := v_right + 1; end if;
+    if v_scored then v_correct := v_correct + 1; end if;
     v_results := v_results || jsonb_build_object(
-      'id', v_qid, 'correct_index', v_ci, 'your_answer', v_ans, 'correct', v_ok
+      'id', v_qid, 'correct_index', v_ci, 'your_answer', v_ans,
+      'correct', v_is_right, 'fast', v_fast, 'scored', v_scored,
+      'your_ms', v_ms, 'opp_ms', v_opp_ms
     );
   end loop;
 
   select rating into v_rating from players where id = v_m.player_id;
 
-  -- ELO: your score this round is the fraction correct, played against the
-  -- opponent's rating. Expected score E from the standard logistic curve.
+  -- ELO: your score this round is the fraction of points (correct AND fast),
+  -- played against the opponent's rating. Expected score E from the curve.
   v_s := v_correct::numeric / v_total;
   v_e := 1.0 / (1.0 + power(10, (v_m.opponent_rating - v_rating) / 400.0));
   v_delta := round(32 * (v_s - v_e));
@@ -230,7 +268,9 @@ begin
 
   return jsonb_build_object(
     'correct', v_correct,
+    'right', v_right,
     'total', v_total,
+    'beat_ms', v_opp_ms,
     'old_rating', v_rating,
     'new_rating', v_new,
     'delta', v_delta,
@@ -244,7 +284,7 @@ end; $$;
 grant execute on function public.join_ladder(text)        to anon, authenticated;
 grant execute on function public.get_player(uuid)          to anon, authenticated;
 grant execute on function public.start_match(uuid)         to anon, authenticated;
-grant execute on function public.finish_match(uuid, int[]) to anon, authenticated;
+grant execute on function public.finish_match(uuid, int[], int[]) to anon, authenticated;
 
 -- ---- seed the question bank -------------------------------------
 -- 14 questions, 5 drawn per match. A bigger bank makes brute-force

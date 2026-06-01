@@ -95,56 +95,8 @@
     <div class="trivia-inner">
       <p class="kick gold">THE LEBRON LADDER</p>
       <h2 class="h2">Don't just say you know him.<br><span class="gold">Out-rank everyone.</span></h2>
-      <p class="trivia-sub">Pick a handle, face a real rival, and climb a live global ELO ranking of who knows LeBron best.</p>
-
-      <div class="trivia-card" id="triviaCard">
-        <!-- notice / loading -->
-        <p class="trivia-notice" id="triviaNotice" hidden></p>
-
-        <!-- join -->
-        <div class="trivia-stage" id="triviaJoin">
-          <div class="trivia-bigicon">&#9819;</div>
-          <h3 class="trivia-h3" id="triviaJoinTitle">ENTER THE LADDER</h3>
-          <p class="trivia-copy" id="triviaJoinMsg">Claim a handle to get your starting rating of 1000, then start climbing.</p>
-          <div id="triviaJoinForm">
-            <input id="triviaHandle" class="trivia-handle" type="text" maxlength="20" autocomplete="off" placeholder="Your handle (e.g. AkronAnnie)" />
-            <button type="button" class="submit" id="triviaJoinBtn">ENTER THE LADDER &#9819;</button>
-          </div>
-          <button type="button" class="submit" id="triviaStartBtn" hidden>START A MATCH &#9819;</button>
-          <button type="button" class="trivia-link" id="triviaSwitch" hidden>Play as someone else</button>
-          <div class="trivia-ladder" id="triviaLadderJoin"></div>
-        </div>
-
-        <!-- match -->
-        <div class="trivia-stage" id="triviaPlay" hidden>
-          <div class="trivia-vs">
-            <span class="trivia-vs-side me" id="triviaMe">YOU &middot; 1000</span>
-            <span class="trivia-vs-x">VS</span>
-            <span class="trivia-vs-side opp" id="triviaOpp">&mdash;</span>
-          </div>
-          <div class="trivia-top">
-            <span class="trivia-count" id="triviaCount">Q1 / 5</span>
-            <span class="trivia-score" id="triviaScore">LOCKED IN 0 / 5</span>
-          </div>
-          <div class="trivia-bar"><div class="trivia-bar-fill" id="triviaBarFill"></div></div>
-          <p class="trivia-q" id="triviaQ"></p>
-          <div class="trivia-opts" id="triviaOpts"></div>
-        </div>
-
-        <!-- result -->
-        <div class="trivia-stage" id="triviaResult" hidden>
-          <div class="trivia-bigicon" id="triviaRank">&#9819;</div>
-          <h3 class="trivia-h3" id="triviaRankTitle"></h3>
-          <p class="trivia-final" id="triviaFinal"></p>
-          <p class="trivia-copy" id="triviaBlurb"></p>
-          <div class="trivia-recap" id="triviaRecap"></div>
-          <div class="trivia-result-btns">
-            <button type="button" class="submit" id="triviaAgain">NEW MATCH &#9819;</button>
-            <a href="#sign" class="submit trivia-ghostlink" id="triviaToSign">PUT ME ON THE BOARD &#8594;</a>
-          </div>
-          <div class="trivia-ladder" id="triviaLadderResult"></div>
-        </div>
-      </div>
+      <p class="trivia-sub">A live global ELO 1v1. Claim a handle, draw a real rival, and you only score when you answer correctly <strong>and faster</strong> than they would. Slow is the same as wrong.</p>
+      <button type="button" class="big-btn trivia-launch" id="triviaLaunch">PLAY THE LEBRON LADDER <span>&#9819;</span></button>
     </div>
   </section>
 
@@ -205,6 +157,68 @@
     <p class="foot-copy">&copy; <span id="yr"></span> lebronforpresident.com</p>
     <p class="foot-credit">Photo: Erik Drost, <a href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener">CC BY 2.0</a>, via Wikimedia Commons.</p>
   </footer>
+
+  <!-- LEBRON LADDER GAME (overlay) -->
+  <div class="game-bg" id="gameModal" aria-hidden="true">
+    <div class="game-panel" role="dialog" aria-modal="true" aria-label="The LeBron Ladder">
+      <button type="button" class="game-close" id="gameClose" aria-label="Close game">&times;</button>
+
+      <div class="trivia-card" id="triviaCard">
+        <!-- notice / loading -->
+        <p class="trivia-notice" id="triviaNotice" hidden></p>
+
+        <!-- join -->
+        <div class="trivia-stage" id="triviaJoin">
+          <div class="trivia-bigicon">&#9819;</div>
+          <h3 class="trivia-h3" id="triviaJoinTitle">ENTER THE LADDER</h3>
+          <p class="trivia-copy" id="triviaJoinMsg">Claim a handle to get your starting rating of 1000, then start climbing.</p>
+          <div id="triviaJoinForm">
+            <input id="triviaHandle" class="trivia-handle" type="text" maxlength="20" autocomplete="off" placeholder="Your handle (e.g. AkronAnnie)" />
+            <button type="button" class="submit" id="triviaJoinBtn">ENTER THE LADDER &#9819;</button>
+          </div>
+          <button type="button" class="submit" id="triviaStartBtn" hidden>START A MATCH &#9819;</button>
+          <button type="button" class="trivia-link" id="triviaSwitch" hidden>Play as someone else</button>
+          <div class="trivia-ladder" id="triviaLadderJoin"></div>
+        </div>
+
+        <!-- match -->
+        <div class="trivia-stage" id="triviaPlay" hidden>
+          <div class="trivia-vs">
+            <span class="trivia-vs-side me" id="triviaMe">YOU &middot; 1000</span>
+            <span class="trivia-vs-x">VS</span>
+            <span class="trivia-vs-side opp" id="triviaOpp">&mdash;</span>
+          </div>
+          <div class="trivia-top">
+            <span class="trivia-count" id="triviaCount">Q1 / 5</span>
+            <span class="trivia-clock" id="triviaClock">0.0s</span>
+          </div>
+          <div class="trivia-bar"><div class="trivia-bar-fill" id="triviaBarFill"></div></div>
+          <p class="trivia-target" id="triviaTarget"></p>
+          <p class="trivia-q" id="triviaQ"></p>
+          <div class="trivia-opts" id="triviaOpts"></div>
+        </div>
+
+        <!-- result -->
+        <div class="trivia-stage" id="triviaResult" hidden>
+          <div class="trivia-bigicon" id="triviaRank">&#9819;</div>
+          <h3 class="trivia-h3" id="triviaRankTitle"></h3>
+          <p class="trivia-final" id="triviaFinal"></p>
+          <p class="trivia-copy" id="triviaBlurb"></p>
+          <div class="trivia-recap" id="triviaRecap"></div>
+          <p class="trivia-recap-key">
+            <span class="trivia-pip hit"></span> scored
+            <span class="trivia-pip slow"></span> too slow
+            <span class="trivia-pip miss"></span> wrong
+          </p>
+          <div class="trivia-result-btns">
+            <button type="button" class="submit" id="triviaAgain">NEW MATCH &#9819;</button>
+            <a href="#sign" class="submit trivia-ghostlink" id="triviaToSign">PUT ME ON THE BOARD &#8594;</a>
+          </div>
+          <div class="trivia-ladder" id="triviaLadderResult"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- MODAL -->
   <div class="modal-bg" id="modal" aria-hidden="true">

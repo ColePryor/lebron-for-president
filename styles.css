@@ -267,6 +267,34 @@ body {
 .trivia-row-you-tag { color: var(--gold); font-size: 0.75rem; letter-spacing: 0.1em; }
 .trivia-opt.picked { border-color: var(--gold); background: rgba(253,185,39,0.12); }
 
+/* GAME OVERLAY (clickable LeBron Ladder) */
+.trivia-launch { margin: 0 auto; }
+.game-bg {
+  position: fixed; inset: 0; z-index: 215; display: none; align-items: flex-start; justify-content: center;
+  background: rgba(5,5,8,0.86); backdrop-filter: blur(7px); padding: 40px 16px; overflow-y: auto;
+}
+.game-bg.open { display: flex; animation: fade 0.2s; }
+.game-panel {
+  position: relative; margin: auto; width: 100%; max-width: 620px;
+  background: linear-gradient(180deg, var(--black-2), var(--black)); border: 1px solid var(--gold);
+  border-radius: 24px; padding: 44px 30px 34px; box-shadow: 0 40px 100px rgba(0,0,0,0.7);
+  animation: pop 0.35s cubic-bezier(.2,1.2,.3,1);
+}
+.game-panel .trivia-card { border: 0; padding: 0; min-height: 0; background: transparent; box-shadow: none; }
+.game-close {
+  position: absolute; top: 12px; right: 16px; background: transparent; border: 0; line-height: 1;
+  color: var(--grey); font-size: 2rem; cursor: pointer; transition: color 0.2s;
+}
+.game-close:hover { color: var(--white); }
+
+/* per-question speed clock + target */
+.trivia-clock { font-family: "Anton", sans-serif; font-size: 0.95rem; color: var(--gold); font-variant-numeric: tabular-nums; }
+.trivia-clock.over { color: #ff5470; }
+.trivia-target { color: var(--grey); font-size: 0.9rem; text-align: center; margin: -16px 0 18px; }
+.trivia-pip.slow { background: #fdb927; }
+.trivia-recap-key { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; color: var(--grey); font-size: 0.8rem; margin: 0 0 0.4rem; }
+.trivia-recap-key .trivia-pip { width: 18px; }
+
 /* SIGN */
 .sign {
   background:

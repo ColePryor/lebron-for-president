@@ -233,10 +233,17 @@
     var meEl = document.getElementById("triviaMe");
     var oppEl = document.getElementById("triviaOpp");
     var countEl = document.getElementById("triviaCount");
-    var scoreEl = document.getElementById("triviaScore");
+    var clockEl = document.getElementById("triviaClock");
+    var targetEl = document.getElementById("triviaTarget");
     var barEl = document.getElementById("triviaBarFill");
     var qEl = document.getElementById("triviaQ");
     var optsEl = document.getElementById("triviaOpts");
+
+    // the clickable game overlay
+    var gameModal = document.getElementById("gameModal");
+    var launchBtn = document.getElementById("triviaLaunch");
+    var gameClose = document.getElementById("gameClose");
+    var toSignBtn = document.getElementById("triviaToSign");
 
     var rankIcon = document.getElementById("triviaRank");
     var rankTitle = document.getElementById("triviaRankTitle");
@@ -249,10 +256,40 @@
     var player = null;   // { id, handle, rating }
     var match = null;    // start_match payload
     var answers = [];    // chosen original option index per question
+    var times = [];      // answer time in ms per question
     var idx = 0;
     var busy = false;
+    var qStart = 0;      // when the current question was shown (ms)
+    var clockTimer = null;
+
+    function nowMs() { return (window.performance && performance.now) ? performance.now() : Date.now(); }
 
     function show(el) { [joinEl, playEl, resultEl].forEach(function (s) { s.hidden = (s !== el); }); }
+
+    // ---- the game lives in a clickable overlay, not the page flow ----
+    function openGame() {
+      gameModal.classList.add("open");
+      gameModal.setAttribute("aria-hidden", "false");
+      if (LADDER && !match) renderLadder(ladderJoinEl);
+    }
+    function closeGame() {
+      stopClock();
+      gameModal.classList.remove("open");
+      gameModal.setAttribute("aria-hidden", "true");
+    }
+
+    // ---- per-question speed clock ----
+    function stopClock() { if (clockTimer) { clearInterval(clockTimer); clockTimer = null; } }
+    function startClock() {
+      stopClock();
+      tickClock();
+      clockTimer = setInterval(tickClock, 100);
+    }
+    function tickClock() {
+      var el = nowMs() - qStart;
+      clockEl.textContent = (el / 1000).toFixed(1) + "s";
+      clockEl.classList.toggle("over", !!(match && el > match.beat_ms));
+    }
     function notice(msg) { noticeEl.textContent = msg; noticeEl.hidden = false; }
     function clearNotice() { noticeEl.hidden = true; }
     function fail(msg, e) { if (e) console.error(e); notice(msg); }
@@ -330,7 +367,7 @@
       if (busy || !player) return;
       busy = true; clearNotice(); startBtn.disabled = true; againBtn.disabled = true;
       rpc("start_match", { p_player_id: player.id }).then(function (m) {
-        match = m; answers = []; idx = 0; busy = false;
+        match = m; answers = []; times = []; idx = 0; busy = false;
         startBtn.disabled = false; againBtn.disabled = false;
         player.rating = m.your_rating; savePlayer();
         meEl.textContent = player.handle + " · " + m.your_rating;
@@ -347,8 +384,9 @@
       var q = match.questions[idx];
       var n = match.questions.length;
       countEl.textContent = "Q" + (idx + 1) + " / " + n;
-      scoreEl.textContent = "LOCKED IN " + idx + " / " + n;
       barEl.style.width = ((idx / n) * 100) + "%";
+      var beatS = ((match.beat_ms || 7000) / 1000).toFixed(1);
+      targetEl.textContent = "Answer in under " + beatS + "s to beat " + match.opponent.handle + " (slower scores nothing).";
       qEl.textContent = q.prompt;
       optsEl.innerHTML = "";
       // shuffle display order but remember the original index to submit
@@ -360,15 +398,18 @@
         b.addEventListener("click", function () { pick(b, orig); });
         optsEl.appendChild(b);
       });
+      qStart = nowMs();
+      startClock();
     }
 
     function pick(btn, orig) {
       if (busy) return;
       busy = true;
+      stopClock();
+      times[idx] = Math.max(0, Math.round(nowMs() - qStart));
       answers[idx] = orig;
       Array.prototype.forEach.call(optsEl.children, function (b) { b.disabled = true; });
       btn.classList.add("picked");
-      scoreEl.textContent = "LOCKED IN " + (idx + 1) + " / " + match.questions.length;
       setTimeout(function () {
         idx++;
         if (idx < match.questions.length) renderQ();
@@ -377,12 +418,13 @@
     }
 
     function finishMatch() {
+      stopClock();
       barEl.style.width = "100%";
       rankIcon.textContent = "⏳"; rankTitle.textContent = "SCORING…";
       finalEl.textContent = ""; blurbEl.textContent = ""; recapEl.innerHTML = "";
       show(resultEl);
-      rpc("finish_match", { p_match_id: match.match_id, p_answers: answers })
-        .then(renderResult)
+      rpc("finish_match", { p_match_id: match.match_id, p_answers: answers, p_times: times })
+        .then(function (res) { match = null; renderResult(res); })
         .catch(function (e) { fail("Couldn't score that match. Try again.", e); renderJoin(); show(joinEl); });
     }
 
@@ -393,13 +435,18 @@
       rankTitle.textContent = t.title;
       var sign = res.delta >= 0 ? "+" : "−";
       finalEl.textContent = sign + Math.abs(res.delta) + "  →  " + res.new_rating;
-      blurbEl.textContent = "You went " + res.correct + "/" + res.total + " against " +
-        res.opponent.handle + " (" + res.opponent.rating + "). You're now #" +
-        res.rank + " of " + res.players + " on the ladder.";
+      var slow = (res.right || 0) - res.correct;
+      var slowNote = slow > 0
+        ? " (" + slow + " right but too slow, those don't count)"
+        : "";
+      blurbEl.textContent = "You scored " + res.correct + "/" + res.total +
+        " against " + res.opponent.handle + " (" + res.opponent.rating + ")" + slowNote +
+        ". You're now #" + res.rank + " of " + res.players + " on the ladder.";
       recapEl.innerHTML = "";
       (res.results || []).forEach(function (r) {
+        var cls = r.scored ? "hit" : (r.correct ? "slow" : "miss");
         var p = document.createElement("span");
-        p.className = "trivia-pip " + (r.correct ? "hit" : "miss");
+        p.className = "trivia-pip " + cls;
         recapEl.appendChild(p);
       });
       show(resultEl);
@@ -408,6 +455,16 @@
     }
 
     // ---- wire up ----
+    // The game opens from a button into its own overlay (not an inline scroll
+    // section), so wire the launcher first, before the backend-connected guard.
+    if (launchBtn) launchBtn.addEventListener("click", openGame);
+    if (gameClose) gameClose.addEventListener("click", closeGame);
+    if (toSignBtn) toSignBtn.addEventListener("click", closeGame);
+    gameModal.addEventListener("click", function (e) { if (e.target === gameModal) closeGame(); });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && gameModal.classList.contains("open")) closeGame();
+    });
+
     if (!LADDER) {
       notice("The online LeBron Ladder isn't connected yet — check back soon.");
       joinForm.hidden = true;
