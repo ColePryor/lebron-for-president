@@ -45,6 +45,12 @@
       </div>
 
       <a href="#sign" class="big-btn">PUT ME ON THE BOARD <span>&#8594;</span></a>
+
+      <button type="button" class="anthem-btn" id="anthemBtn" hidden>
+        <span id="anthemIcon">&#9654;</span>
+        <span id="anthemLabel">PLAY THE ANTHEM</span>
+      </button>
+      <audio id="anthem" src="theme.mp3" preload="metadata"></audio>
     </div>
   </section>
 
@@ -87,6 +93,18 @@
         White House together. A family that turned showing up into a legacy,
         now representing every family in the country.
       </p>
+    </div>
+  </section>
+
+  <!-- CAMPAIGN PORTRAIT (revealed only when the image exists) -->
+  <section class="portrait" id="portrait" hidden>
+    <div class="portrait-inner">
+      <p class="kick gold">THE OFFICIAL PORTRAIT</p>
+      <h2 class="h2">Ready for the <span class="gold">Oval Office.</span></h2>
+      <div class="portrait-frame">
+        <img id="portraitImg" src="img/lebron-suit.jpg" alt="LeBron James in a suit, tie, and sunglasses, campaign portrait" />
+      </div>
+      <p class="portrait-cap">Suit pressed. Mind made up. The fourth quarter starts in 2028.</p>
     </div>
   </section>
 

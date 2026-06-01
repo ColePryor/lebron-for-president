@@ -181,6 +181,34 @@ body {
 @media (max-width: 640px) { .bronny::before, .bronny::after { display: none; } }
 
 /* TRIVIA BATTLE */
+/* ANTHEM PLAY BUTTON (hero) */
+.anthem-btn {
+  margin-top: 16px; display: inline-flex; align-items: center; gap: 10px;
+  background: rgba(255,255,255,0.06); border: 1.5px solid var(--line); color: var(--white);
+  padding: 11px 22px; border-radius: 99px; font-family: inherit; font-weight: 700; font-size: 0.95rem;
+  cursor: pointer; transition: border-color 0.2s, transform 0.2s;
+}
+.anthem-btn:hover { border-color: var(--gold); transform: translateY(-1px); }
+.anthem-btn #anthemIcon { color: var(--gold); font-size: 0.9rem; }
+
+/* CAMPAIGN PORTRAIT */
+.portrait {
+  position: relative; padding: 100px 26px; text-align: center;
+  background:
+    radial-gradient(60% 90% at 50% 0%, rgba(85,37,131,0.3), transparent 60%),
+    var(--black);
+  border-top: 1px solid var(--line);
+}
+.portrait[hidden] { display: none; }
+.portrait-inner { max-width: 620px; margin: 0 auto; }
+.portrait .kick, .portrait .h2 { text-align: center; }
+.portrait-frame {
+  margin: 2.2rem auto 0; max-width: 440px; border-radius: 20px; overflow: hidden;
+  border: 1px solid var(--gold); box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+}
+.portrait-frame img { display: block; width: 100%; height: auto; }
+.portrait-cap { color: var(--grey); margin-top: 1.2rem; font-size: 0.98rem; }
+
 .trivia {
   position: relative; padding: 110px 26px; text-align: center;
   background:

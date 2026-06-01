@@ -501,10 +501,47 @@
     });
   }
 
+  // ---- campaign portrait + anthem ----
+  // Both assets are optional: each feature reveals itself only when its file
+  // actually loads, so nothing shows up broken before the files are added.
+  function setupExtras() {
+    // second photo: lebron in suit/tie/sunglasses -> img/lebron-suit.jpg
+    var sec = document.getElementById("portrait");
+    var pi = document.getElementById("portraitImg");
+    if (sec && pi) {
+      var reveal = function () { if (pi.naturalWidth > 0) sec.hidden = false; };
+      if (pi.complete) reveal();
+      pi.addEventListener("load", reveal);
+      pi.addEventListener("error", function () { sec.hidden = true; });
+    }
+
+    // theme song "Oh, Mister LeBron" -> theme.mp3
+    var audio = document.getElementById("anthem");
+    var btn = document.getElementById("anthemBtn");
+    var icon = document.getElementById("anthemIcon");
+    var label = document.getElementById("anthemLabel");
+    if (!audio || !btn) return;
+
+    function setPlaying(on) {
+      if (icon) icon.innerHTML = on ? "&#10073;&#10073;" : "&#9654;";
+      if (label) label.textContent = on ? "PAUSE THE ANTHEM" : "PLAY THE ANTHEM";
+    }
+    audio.addEventListener("loadedmetadata", function () { btn.hidden = false; });
+    audio.addEventListener("error", function () { btn.hidden = true; });
+    audio.addEventListener("ended", function () { setPlaying(false); });
+    audio.addEventListener("pause", function () { setPlaying(false); });
+    audio.addEventListener("play", function () { setPlaying(true); });
+    btn.addEventListener("click", function () {
+      if (audio.paused) audio.play().catch(function () { toast("Couldn't play the anthem."); });
+      else audio.pause();
+    });
+    audio.load();
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     var yr = document.getElementById("yr"); if (yr) yr.textContent = String(new Date().getFullYear());
     sizeCanvas();
-    fillStates(); buildMarquee(); setupForm(); setupShare(); setupTrivia(); renderWall();
+    fillStates(); buildMarquee(); setupForm(); setupShare(); setupTrivia(); setupExtras(); renderWall();
     paint(false);
     setTimeout(function () { paint(true); }, 300);
 

@@ -1,0 +1,28 @@
+"OH, MISTER LEBRON" - campaign anthem for Draft LeBron 2028
+
+Drop the finished audio in this folder as `theme.mp3` and the hero's
+"PLAY THE ANTHEM" button appears automatically.
+
+Suggested style prompt (Suno / Udio):
+  triumphant brass-band campaign anthem, gospel choir, upbeat, patriotic,
+  1960s soul, big crowd energy.
+
+----------------------------------------------------------------------
+
+(Verse)
+Oh, Mister LeBron, won't you take the lead,
+Twenty-one seasons of doing the deed.
+From Akron streets to the highest hall,
+The man who never mailed it in at all.
+
+(Chorus)
+Oh, Mister LeBron! (Oh, Mister LeBron!)
+Run the country like the fourth quarter's on!
+Effort is a policy, loyalty's the law,
+Oh, Mister LeBron, we're drafting you for all!
+
+(Bridge)
+Built a school from nothing, raised a First Son too,
+Red, white, and Lakers gold, the dream is overdue.
+So put him on the board, let the whole nation call:
+Oh, Mister LeBron, for the people, for us all!
