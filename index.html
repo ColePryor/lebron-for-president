@@ -57,6 +57,37 @@
     </div>
   </section>
 
+  <!-- SIGN (the main spectacle, straight off the hero) -->
+  <section class="sign" id="sign">
+    <div class="sign-inner">
+      <p class="kick gold">THE DECLARATION</p>
+      <h2 class="sign-head">SIGN THE <span class="gold">DRAFT.</span></h2>
+      <p class="sign-blurb">
+        We the undersigned formally draft LeBron James for President. Not a party,
+        a leader who has spent his whole life proving that effort, loyalty, and a
+        refusal to lose can move anything. Add your name, then send it on.
+      </p>
+
+      <form class="sign-form" id="form" novalidate>
+        <div class="sign-row">
+          <input id="firstName" type="text" autocomplete="given-name" placeholder="First name" />
+          <select id="state"><option value="" disabled selected>Your state</option></select>
+        </div>
+        <input id="reason" type="text" maxlength="90" placeholder="Your message (optional)" />
+        <button type="submit" class="submit">I'M IN &#9819;</button>
+        <p class="card-foot">One tap. You're on the board for good.</p>
+      </form>
+
+      <div class="sign-meter">
+        <div class="sign-meter-head">
+          <span class="sign-now" id="goalNow">0</span>
+          <span class="sign-goal">of 1,000,000 signatures</span>
+        </div>
+        <div class="bar"><div class="bar-fill" id="barFill"></div></div>
+      </div>
+    </div>
+  </section>
+
   <!-- MARQUEE -->
   <div class="marquee">
     <div class="marquee-track" id="marquee"></div>
@@ -105,7 +136,7 @@
       <p class="kick gold">THE OFFICIAL PORTRAIT</p>
       <h2 class="h2">Ready for the <span class="gold">Oval Office.</span></h2>
       <div class="portrait-frame">
-        <img id="portraitImg" src="img/lebron-suit.jpg" alt="LeBron James in a suit, tie, and sunglasses, campaign portrait" />
+        <img id="portraitImg" src="img/lebron-suit.jpg" alt="LeBron James in a suit addressing a crowd, campaign portrait" />
       </div>
       <p class="portrait-cap">Suit pressed. Mind made up. The fourth quarter starts in 2028.</p>
     </div>
@@ -118,47 +149,6 @@
       <h2 class="h2">Don't just say you know him.<br><span class="gold">Out-rank everyone.</span></h2>
       <p class="trivia-sub">A live global ELO 1v1. Claim a handle, draw a real rival, and you only score when you answer correctly <strong>and faster</strong> than they would. Slow is the same as wrong.</p>
       <button type="button" class="big-btn trivia-launch" id="triviaLaunch">PLAY THE LEBRON LADDER <span>&#9819;</span></button>
-    </div>
-  </section>
-
-  <!-- SIGN -->
-  <section class="sign" id="sign">
-    <div class="sign-grid">
-      <div class="sign-left">
-        <p class="kick gold">THE DECLARATION</p>
-        <h2 class="h2">We the undersigned formally draft<br>LeBron James for President.</h2>
-        <p class="sign-blurb">
-          This is not an endorsement of a party. It is a call for a leader who has
-          spent his entire life proving that effort, loyalty, and a refusal to lose
-          can move anything. Sign it. Then send it to someone who needs to see it.
-        </p>
-
-        <div class="bar-wrap">
-          <div class="bar-head">
-            <span id="goalNow">0</span>
-            <span class="bar-goal">/ 1,000,000 goal</span>
-          </div>
-          <div class="bar"><div class="bar-fill" id="barFill"></div></div>
-        </div>
-      </div>
-
-      <form class="card" id="form" novalidate>
-        <h3 class="card-title">ADD YOUR NAME</h3>
-        <div class="field">
-          <label for="firstName">First name</label>
-          <input id="firstName" type="text" autocomplete="given-name" placeholder="LeBron" />
-        </div>
-        <div class="field">
-          <label for="state">State</label>
-          <select id="state"><option value="" disabled selected>Select your state</option></select>
-        </div>
-        <div class="field">
-          <label for="reason">Your message <span class="opt">(optional)</span></label>
-          <input id="reason" type="text" maxlength="90" placeholder="Why are you in?" />
-        </div>
-        <button type="submit" class="submit">I'M IN &#9819;</button>
-        <p class="card-foot">One tap. You're on the board for good.</p>
-      </form>
     </div>
   </section>
 
@@ -176,7 +166,7 @@
       or any candidate or committee. Made by people who just think he'd be good at it.
     </p>
     <p class="foot-copy">&copy; <span id="yr"></span> lebronforpresident.com</p>
-    <p class="foot-credit">Hero photo: Erik Drost, <a href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener">CC BY 2.0</a>, via Wikimedia Commons. Suit portrait: Los Angeles Times.</p>
+    <p class="foot-credit">Hero photo: Erik Drost, <a href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener">CC BY 2.0</a>, via Wikimedia Commons. Suit portrait: GQ.</p>
   </footer>
 
   <!-- LEBRON LADDER GAME (overlay) -->
