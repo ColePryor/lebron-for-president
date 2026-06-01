@@ -50,15 +50,15 @@
 
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
 
-  function renderWall(freshName) {
+  function renderWall() {
     var wall = document.getElementById("wall");
     if (!wall) return;
-    var mine = sigs.filter(function (s) { return s.quote; }).slice(-6).reverse();
-    var items = mine.concat(SEED).slice(0, 6);
+    // Curated board: always the six controlled examples. Public submissions are
+    // still collected, but never auto-published here, so the wall can't be hijacked.
     wall.innerHTML = "";
-    items.forEach(function (s) {
+    SEED.forEach(function (s) {
       var c = document.createElement("div");
-      c.className = "wall-card" + (freshName && s.name === freshName ? " fresh" : "");
+      c.className = "wall-card";
       c.innerHTML =
         '<p class="wall-quote">&ldquo;' + esc(s.quote) + '&rdquo;</p>' +
         '<div class="wall-meta"><span class="wall-dot">' + esc(s.name.charAt(0).toUpperCase()) + '</span>' +
@@ -180,14 +180,10 @@
 
       var mine = total();
       paint(true);
-      renderWall(name);
       celebrate();
       openModal(mine);
       form.reset();
       st.selectedIndex = 0;
-
-      var card = document.querySelector(".wall-card.fresh");
-      if (card) setTimeout(function () { card.scrollIntoView({ behavior: "smooth", block: "center" }); }, 400);
     });
     form.addEventListener("input", function (e) { if (e.target.classList) e.target.classList.remove("bad"); });
   }
