@@ -62,6 +62,13 @@ body {
   font-size: 0.95rem; transition: transform 0.15s, background 0.2s;
 }
 .brand-cta:hover { transform: scale(1.05); background: var(--gold-2); }
+.topnav { display: flex; align-items: center; gap: 12px; }
+.brand-play {
+  font-family: "Anton", sans-serif; cursor: pointer; color: var(--white); background: transparent;
+  border: 1.5px solid var(--line); padding: 6px 18px; border-radius: 99px; letter-spacing: 0.08em;
+  font-size: 0.95rem; transition: border-color 0.2s, transform 0.15s;
+}
+.brand-play:hover { border-color: var(--gold); transform: scale(1.05); }
 
 /* HERO */
 .hero {

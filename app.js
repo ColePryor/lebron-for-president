@@ -242,6 +242,7 @@
     // the clickable game overlay
     var gameModal = document.getElementById("gameModal");
     var launchBtn = document.getElementById("triviaLaunch");
+    var navPlayBtn = document.getElementById("navPlay");
     var gameClose = document.getElementById("gameClose");
     var toSignBtn = document.getElementById("triviaToSign");
 
@@ -458,6 +459,7 @@
     // The game opens from a button into its own overlay (not an inline scroll
     // section), so wire the launcher first, before the backend-connected guard.
     if (launchBtn) launchBtn.addEventListener("click", openGame);
+    if (navPlayBtn) navPlayBtn.addEventListener("click", openGame);
     if (gameClose) gameClose.addEventListener("click", closeGame);
     if (toSignBtn) toSignBtn.addEventListener("click", closeGame);
     gameModal.addEventListener("click", function (e) { if (e.target === gameModal) closeGame(); });
