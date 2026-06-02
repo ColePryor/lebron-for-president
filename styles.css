@@ -174,7 +174,7 @@ body {
   background:
     radial-gradient(70% 120% at 50% 0%, rgba(85,37,131,0.45), transparent 60%),
     linear-gradient(180deg, var(--black), var(--black-2));
-  border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  border-top: 1px solid var(--line);
 }
 .bronny::before, .bronny::after {
   content: "\265B"; position: absolute; color: rgba(253,185,39,0.12);
@@ -198,13 +198,13 @@ body {
 .anthem-btn:hover { border-color: var(--gold); transform: translateY(-1px); }
 .anthem-btn #anthemIcon { color: var(--gold); font-size: 0.9rem; }
 
-/* CAMPAIGN PORTRAIT */
+/* CAMPAIGN PORTRAIT (flows seamlessly out of the Bronny band above it) */
 .portrait {
-  position: relative; padding: 100px 26px; text-align: center;
+  position: relative; padding: 80px 26px 100px; text-align: center;
   background:
-    radial-gradient(60% 90% at 50% 0%, rgba(85,37,131,0.3), transparent 60%),
-    var(--black);
-  border-top: 1px solid var(--line);
+    radial-gradient(55% 70% at 12% 38%, rgba(85,37,131,0.3), transparent 60%),
+    radial-gradient(45% 60% at 90% 80%, rgba(253,185,39,0.08), transparent 60%),
+    linear-gradient(180deg, var(--black-2), var(--black));
 }
 .portrait[hidden] { display: none; }
 .portrait-inner { max-width: 620px; margin: 0 auto; }
